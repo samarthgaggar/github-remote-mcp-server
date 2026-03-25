@@ -3,17 +3,14 @@ FROM golang:1.23-alpine AS build
 
 ARG VERSION="dev"
 
-# Set the working directory
 WORKDIR /build
 
 # Install git
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add --no-cache git
 
-# Copy source code
 COPY . .
 
-# Build the server
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${VERSION} -X main.commit=$(git rev-parse HEAD) -X main.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -43,10 +40,8 @@ RUN chmod +x /usr/local/bin/github-mcp-server && \
 # Expose the port for HTTP interface
 EXPOSE 8080
 
-# Set working directory
 WORKDIR /app
 
-# Use the startup script
 ENTRYPOINT ["/usr/local/bin/start-server.sh"]
 
 # Default empty CMD
